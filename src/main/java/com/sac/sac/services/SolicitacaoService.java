@@ -1,9 +1,9 @@
 package com.sac.sac.services;
 
-import com.sac.sac.controllers.SolicitacoesController;
-import com.sac.sac.entidades.Atendente;
-import com.sac.sac.entidades.Solicitacao;
-import com.sac.sac.entidades.TimeAtendimento;
+import com.sac.sac.domain.*;
+import com.sac.sac.dtos.SolicitacaoDTO;
+import com.sac.sac.dtos.SolicitacaoFinalizadaDTO;
+import com.sac.sac.repositories.SolicitacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,52 +12,125 @@ import java.util.List;
 @Service
 public class SolicitacaoService {
     @Autowired
-    private SolicitacoesController solicitacoesController;
+    private SolicitacaoRepository repository;
+    @Autowired
+    private AtendenteService atendenteService;
+    @Autowired
+    private ClienteService clienteService;
+    @Autowired
+    private TipoSolicitacaoService tipoSolicitacaoService;
 
-    public void validaSolicitacao(){
+    public Solicitacao createSolicitacao(SolicitacaoDTO solicitacaoDTO) throws Exception {
+        Cliente cliente = this.clienteService.findClienteById(solicitacaoDTO.ClienteId());
+        Tiposolicitacao tiposolicitacao = this.tipoSolicitacaoService.findTiposolicitacaoById(solicitacaoDTO.TiposolicitacaoId());
+
+        Solicitacao solicitacao = new Solicitacao();
+        solicitacao.setCliente(cliente);
+        solicitacao.setTiposolicitacao(tiposolicitacao);
+        solicitacao.setDescricao(solicitacaoDTO.descricao());
+
+        validaSolicitacao(solicitacao);
+
+        //verifica se há algum atendente com menos de 3 clientes
+        Atendente atendente = buscarAtendenteDisponivel(solicitacao);
+        if (atendente.getId() == null) {
+            //adicionar solicitação na fila de espera
+            solicitacao.setStatusAtendimento(StatusAtendimento.EMESPERA);
+            saveSolicitacao(solicitacao);
+
+            throw new Exception("Todos os Atendentes estão em atendimento no momento! Aguarde na fila. ");
+        }else {
+            solicitacao.setAtendente(atendente);
+            solicitacao.getTiposolicitacao().setTimeAtendimento(timeByTipoSolicitacao(solicitacao));
+            solicitacao.setStatusAtendimento(StatusAtendimento.EMANDAMENTO);
+            saveSolicitacao(solicitacao);
+        }
+        return solicitacao;
 
     }
 
+    public void validaSolicitacao(Solicitacao s) throws Exception {
+        //verifica se já existe um atendimento em andamento para o cliente do mesmo tipo de solicitação
+        if(verificaSolicitacaoRepetida(s)){
+            throw new Exception("Já existe uma solicitação em andamento para o tipo de problema informado!");
+        }
+    }
 
-    //verifica se o atendente já está com 3 clientes em atendimento
-    public Boolean verificaQntClienteByAtendente(List<Solicitacao> solicitacoes, Atendente atendente){
-        int count = 0;
-        //varredura do array
-        for (Solicitacao s: solicitacoes ) {
-            //verifica se o atendente passado pelo parâmetro está na listagem
-            if(s.getAtendente() == atendente){
-                count = count+1;
+    public TimeAtendimento timeByTipoSolicitacao(Solicitacao s){
+        if(s.getTiposolicitacao().getNome().equalsIgnoreCase("Problemas com Cartão")  ){
+            return TimeAtendimento.CARTOES;
+        } else if (s.getTiposolicitacao().getNome().equalsIgnoreCase("Contratação de Empréstimo")) {
+            return TimeAtendimento.EMPRESTIMOS;
+        }else {
+            return TimeAtendimento.OUTROS;
+        }
+
+
+    }
+
+    public List<Solicitacao> getAllByEmEspera(){
+        List<Solicitacao> solicitacoes = this.repository.findAllByStatusAtendimento(StatusAtendimento.EMESPERA);
+        int ordemfila = 0;
+        if(!(solicitacoes.isEmpty())){
+            for (Solicitacao s:solicitacoes) {
+                ordemfila = ordemfila+1;
+                s.setOrdemFila(ordemfila);
             }
         }
-        return count > 3;
+        return solicitacoes;
     }
 
-    //verifica se o tipo de Solicitação está de acordo com o time correto
-    public Boolean verificaAtendenteByTimeSolicitacao(Solicitacao solicitacao){
-        //verifica tipo problema cartões para atendente do time cartões (ID:1)
-        if(solicitacao.getTiposolicitacao().getId() == 1L){
-            return solicitacao.getAtendente().getTime() == TimeAtendimento.CARTOES;
-        //verifica tipo contratação de empréstimo para atendente do time emprestimo (ID:2)
-        }else if(solicitacao.getTiposolicitacao().getId() == 2L){
-            return solicitacao.getAtendente().getTime() == TimeAtendimento.EMPRESTIMOS;
-        //verifica tipo problema Outros Assuntos para atendente do time Outros Assuntos (ID:3)
-        }else if(solicitacao.getTiposolicitacao().getId() == 3L){
-            return solicitacao.getAtendente().getTime() == TimeAtendimento.OUTROS;
-        }else{
-            return false;
-        }
-
+    public List<Solicitacao> getAllByEmAndamento(){
+        return this.repository.findAllByStatusAtendimento(StatusAtendimento.EMANDAMENTO);
     }
-    public Boolean verificaSolicitacaoRepetida(List<Solicitacao> solicitacoes,Solicitacao solicitacao){
-        int count = 0;
-        for (Solicitacao s: solicitacoes ) {
-            if ((s.getCliente() == solicitacao.getCliente())
-                    && (s.getTiposolicitacao() == solicitacao.getTiposolicitacao())
-            ) {
-                count = count + 1;
+
+    public Solicitacao findSolicitacaoById(Long id) throws Exception {
+        return this.repository.findSolicitacaoById(id).orElseThrow(() -> new Exception("Solicitação não encontrada!"));
+    }
+
+    public Solicitacao updateStatusSolicitacaoFinalizado(SolicitacaoFinalizadaDTO solicitacaoFinalizadaDTO){
+        Solicitacao s = new Solicitacao();
+        s.setId(solicitacaoFinalizadaDTO.solicitacaoId());
+        s.setStatusAtendimento(StatusAtendimento.FINALIZADO);
+        this.saveSolicitacao(s);
+        return s;
+    }
+
+    public void saveSolicitacao(Solicitacao s){
+        this.repository.save(s);
+    }
+
+
+    //método para buscar o atendente do time que não esteja atendendo mais de 3 clientes
+    public Atendente buscarAtendenteDisponivel(Solicitacao solicitacao){
+        Atendente atendenteDisponivel = new Atendente();
+    //Listagem para trazer todas as solicitacoes em andamento do tipo de atendimento informado
+        List<Solicitacao> solicitacoes = repository.findAllByStatusAtendimentoAndAndTiposolicitacao(StatusAtendimento.EMANDAMENTO,solicitacao.getTiposolicitacao());
+    //Listagem para trazer todos os atendentes do time informado pelo tipo de problema
+        List<Atendente> atendentes = atendenteService.findAllByTimeAtendimento(solicitacao.getTiposolicitacao().getTimeAtendimento());
+        int countCliente;
+    //varredura da listagem dos atendentes
+        for (Atendente atendente: atendentes) {
+            countCliente = 0;
+            //varredura da listagem das solicitações por atendente
+            for (Solicitacao s : solicitacoes) {
+                if(s.getAtendente() == atendente){
+                    countCliente = countCliente+1;
+                }
+            }
+            if(countCliente < 3){
+                atendenteDisponivel = atendente;
+                break;
             }
         }
-        return count > 1;
+        return atendenteDisponivel;
+
+    }
+
+    public Boolean verificaSolicitacaoRepetida(Solicitacao solicitacao) {
+        int count = 0;
+        List<Solicitacao> solicitacoes = repository.findAllByClienteAndTiposolicitacaoAndAndStatusAtendimento(solicitacao.getCliente(), solicitacao.getTiposolicitacao(), StatusAtendimento.EMANDAMENTO);
+        return !(solicitacoes.isEmpty());
     }
 }
 
