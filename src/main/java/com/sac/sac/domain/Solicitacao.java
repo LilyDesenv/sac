@@ -10,6 +10,8 @@ public class Solicitacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String descricao;
+    @Enumerated(EnumType.STRING)
+    private StatusAtendimento statusAtendimento;
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
@@ -19,6 +21,10 @@ public class Solicitacao {
     @ManyToOne
     @JoinColumn(name = "atendente_id")
     private Atendente atendente;
+    @Transient
+    private int ordemFila;
+
+
     public Solicitacao(){}
     public Solicitacao(Long id, String descricao, Cliente cliente, Tiposolicitacao tiposolicitacao, Atendente atendente) {
         this.id = id;
@@ -66,6 +72,22 @@ public class Solicitacao {
 
     public void setAtendente(Atendente atendente) {
         this.atendente = atendente;
+    }
+
+    public StatusAtendimento getStatusAtendimento() {
+        return statusAtendimento;
+    }
+
+    public void setStatusAtendimento(StatusAtendimento statusAtendimento) {
+        this.statusAtendimento = statusAtendimento;
+    }
+
+    public int getOrdemFila() {
+        return ordemFila;
+    }
+
+    public void setOrdemFila(int ordemFila) {
+        this.ordemFila = ordemFila;
     }
 
     @Override
