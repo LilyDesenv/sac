@@ -1,6 +1,4 @@
-package com.sac.sac.entidades;
-
-import java.util.Objects;
+package com.sac.sac.domain;
 
 public enum TimeAtendimento {
    CARTOES,

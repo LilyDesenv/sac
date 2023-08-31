@@ -1,16 +1,27 @@
-package com.sac.sac.entidades;
+package com.sac.sac.domain;
+
+import jakarta.persistence.*;
 
 import java.util.Objects;
-
+@Entity(name = "solicitacao")
+@Table(name = "solicitacao")
 public class Solicitacao {
-    private Long Id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String descricao;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
+    @ManyToOne
+    @JoinColumn(name = "tiposolicitacao_id")
     private Tiposolicitacao tiposolicitacao;
+    @ManyToOne
+    @JoinColumn(name = "atendente_id")
     private Atendente atendente;
     public Solicitacao(){}
     public Solicitacao(Long id, String descricao, Cliente cliente, Tiposolicitacao tiposolicitacao, Atendente atendente) {
-        this.Id = id;
+        this.id = id;
         this.descricao = descricao;
         this.cliente = cliente;
         this.tiposolicitacao = tiposolicitacao;
@@ -18,11 +29,11 @@ public class Solicitacao {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        this.Id = id;
+        this.id = id;
     }
 
     public String getDescricao() {
@@ -73,7 +84,7 @@ public class Solicitacao {
     @Override
     public String toString() {
         return "\nSolicitação{" +
-                "Id = " + Id +
+                "Id = " + id +
                 ", Descrição = '" + descricao + '\'' +
                 ", Cliente = " + cliente.getNome() +
                 ", Tipo de Solicitação = " + tiposolicitacao.getNome() +

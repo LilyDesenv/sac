@@ -1,22 +1,27 @@
-package com.sac.sac.entidades;
+package com.sac.sac.domain;
+
+import jakarta.persistence.*;
 
 import java.util.Objects;
-
+@Entity(name = "cliente")
+@Table(name = "cliente")
 public class Cliente {
-    private Long Id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String nome;
     public Cliente(){}
     public Cliente(Long id, String nome) {
-        this.Id = id;
+        this.id = id;
         this.nome = nome;
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        this.Id = id;
+        this.id = id;
     }
 
     public String getNome() {

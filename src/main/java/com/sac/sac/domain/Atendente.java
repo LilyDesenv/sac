@@ -1,35 +1,47 @@
-package com.sac.sac.entidades;
+package com.sac.sac.domain;
+
+import jakarta.persistence.*;
+
 
 import java.util.Objects;
 
-public class Tiposolicitacao {
-
-    private Long Id;
+@Entity(name = "atendente")
+@Table(name = "atendente")
+public class Atendente {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String nome;
+    @Enumerated(EnumType.STRING)
     private TimeAtendimento timeAtendimento;
 
-    public Tiposolicitacao(){}
-    public Tiposolicitacao(Long id, String nome, TimeAtendimento timeAtendimento) {
-        this.Id = id;
+    public Atendente(){}
+    public Atendente(Long id, String nome, TimeAtendimento timeAtendimento) {
+        this.id = id;
         this.nome = nome;
         this.timeAtendimento = timeAtendimento;
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
+
     public void setId(Long id) {
-        this.Id = id;
+        this.id = id;
     }
+
     public String getNome() {
         return nome;
     }
+
     public void setNome(String nome) {
         this.nome = nome;
     }
+
     public TimeAtendimento getTime() {
         return timeAtendimento;
     }
+
     public void setTime(TimeAtendimento timeAtendimento) {
         this.timeAtendimento = timeAtendimento;
     }
@@ -37,8 +49,8 @@ public class Tiposolicitacao {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Tiposolicitacao that)) return false;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getNome(), that.getNome()) && Objects.equals(timeAtendimento, that.timeAtendimento);
+        if (!(o instanceof Atendente atendente)) return false;
+        return Objects.equals(getId(), atendente.getId()) && Objects.equals(getNome(), atendente.getNome()) && timeAtendimento == atendente.timeAtendimento;
     }
 
     @Override
