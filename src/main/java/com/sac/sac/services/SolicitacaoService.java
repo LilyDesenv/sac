@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SolicitacaoService {
@@ -88,11 +89,16 @@ public class SolicitacaoService {
         return this.repository.findSolicitacaoById(id).orElseThrow(() -> new Exception("Solicitação não encontrada!"));
     }
 
-    public Solicitacao updateStatusSolicitacaoFinalizado(SolicitacaoFinalizadaDTO solicitacaoFinalizadaDTO){
+    public Solicitacao updateStatusSolicitacaoFinalizado(SolicitacaoFinalizadaDTO solicitacaoFinalizadaDTO) throws Exception {
         Solicitacao s = new Solicitacao();
-        s.setId(solicitacaoFinalizadaDTO.solicitacaoId());
-        s.setStatusAtendimento(StatusAtendimento.FINALIZADO);
-        this.saveSolicitacao(s);
+        Optional<Solicitacao> solicitacao = this.repository.findSolicitacaoById(solicitacaoFinalizadaDTO.solicitacaoId());
+        if(solicitacao.isEmpty()){
+            throw new Exception("Solicitação não encontrada!");
+        }else {
+            s.setId(solicitacaoFinalizadaDTO.solicitacaoId());
+            s.setStatusAtendimento(StatusAtendimento.FINALIZADO);
+            this.saveSolicitacao(s);
+        }
         return s;
     }
 
