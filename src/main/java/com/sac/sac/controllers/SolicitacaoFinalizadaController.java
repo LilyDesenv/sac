@@ -20,7 +20,7 @@ public class SolicitacaoFinalizadaController {
     private SolicitacaoService solicitacaoService;
 
     @PostMapping
-    public ResponseEntity<Solicitacao> updateSolicitacao(@RequestBody SolicitacaoFinalizadaDTO solicitacaoFinalizadaDTO){
+    public ResponseEntity<Solicitacao> updateSolicitacao(@RequestBody SolicitacaoFinalizadaDTO solicitacaoFinalizadaDTO) throws Exception {
         Solicitacao solicitacao = this.solicitacaoService.updateStatusSolicitacaoFinalizado (solicitacaoFinalizadaDTO);
         return new ResponseEntity<>(solicitacao, HttpStatus.OK);
 
