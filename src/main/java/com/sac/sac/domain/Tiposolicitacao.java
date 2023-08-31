@@ -19,6 +19,10 @@ public class Tiposolicitacao {
         this.nome = nome;
         this.timeAtendimento = timeAtendimento;
     }
+    public Tiposolicitacao( String nome, TimeAtendimento timeAtendimento) {
+        this.nome = nome;
+        this.timeAtendimento = timeAtendimento;
+    }
 
     public Long getId() {
         return id;
@@ -32,10 +36,10 @@ public class Tiposolicitacao {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    public TimeAtendimento getTime() {
+    public TimeAtendimento getTimeAtendimento() {
         return timeAtendimento;
     }
-    public void setTime(TimeAtendimento timeAtendimento) {
+    public void setTimeAtendimento(TimeAtendimento timeAtendimento) {
         this.timeAtendimento = timeAtendimento;
     }
 

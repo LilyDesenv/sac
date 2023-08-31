@@ -15,6 +15,9 @@ public class Cliente {
         this.id = id;
         this.nome = nome;
     }
+    public Cliente( String nome) {
+        this.nome = nome;
+    }
 
     public Long getId() {
         return id;

@@ -21,6 +21,10 @@ public class Atendente {
         this.nome = nome;
         this.timeAtendimento = timeAtendimento;
     }
+    public Atendente( String nome, TimeAtendimento timeAtendimento) {
+        this.nome = nome;
+        this.timeAtendimento = timeAtendimento;
+    }
 
     public Long getId() {
         return id;

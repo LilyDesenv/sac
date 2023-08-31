@@ -26,14 +26,21 @@ public class Solicitacao {
 
 
     public Solicitacao(){}
-    public Solicitacao(Long id, String descricao, Cliente cliente, Tiposolicitacao tiposolicitacao, Atendente atendente) {
+    public Solicitacao(Long id, String descricao, Cliente cliente, Tiposolicitacao tiposolicitacao, Atendente atendente,StatusAtendimento statusAtendimento) {
         this.id = id;
         this.descricao = descricao;
         this.cliente = cliente;
         this.tiposolicitacao = tiposolicitacao;
         this.atendente = atendente;
+        this.statusAtendimento = statusAtendimento;
     }
-
+    public Solicitacao( String descricao, Cliente cliente, Tiposolicitacao tiposolicitacao, Atendente atendente,StatusAtendimento statusAtendimento) {
+        this.descricao = descricao;
+        this.cliente = cliente;
+        this.tiposolicitacao = tiposolicitacao;
+        this.atendente = atendente;
+        this.statusAtendimento = statusAtendimento;
+    }
     public Long getId() {
         return id;
     }
